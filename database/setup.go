@@ -12,8 +12,7 @@ import (
 var DB *gorm.DB
 
 func Connect() {
-
-	env := fmt.Sprintf("%s://%s:%s@%s:%s/%s",
+	databaseURL := fmt.Sprintf("%s://%s:%s@%s:%s/%s",
 		config.Config.DB_TYPE,
 		config.Config.DB_USERNAME,
 		config.Config.DB_PASSWORD,
@@ -22,14 +21,10 @@ func Connect() {
 		config.Config.DB_NAME,
 	)
 
-	fmt.Println(env)
-
-	db, err := gorm.Open(postgres.Open(env), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(databaseURL), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	DB = db
-
-	config.ShowConfigDetails()
 }
