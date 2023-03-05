@@ -1,30 +1,100 @@
 package routes
 
 import (
-	"server/config"
+	"server/database"
+	"server/entities"
 	"server/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"gorm.io/gorm"
 )
 
 func Login(c *fiber.Ctx) error {
+	type LoginRequest struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
 
-	jwt, err := utils.GenerateJWT(jwt.MapClaims{"name": "saurabh"}, config.Config.COOKIE_SECRET, config.Config.COOKIE_MAXAGE)
-
-	if err == nil {
-		c.Cookie(&fiber.Cookie{
-			Name:     config.Config.COOKIE_NAME,
-			Value:    jwt,
-			Domain:   config.Config.COOKIE_DOMAIN,
-			MaxAge:   config.Config.COOKIE_MAXAGE,
-			SameSite: config.Config.COOKIE_SAMESITE,
+	json := new(LoginRequest)
+	if err := c.BodyParser(json); err != nil {
+		return c.JSON(fiber.Map{
+			"code":    400,
+			"message": "invalid data received",
 		})
 	}
 
-	return nil
+	result := entities.User{}
+	query := entities.User{Email: json.Email}
+
+	err := database.DB.First(&result, &query).Error
+	if err != nil {
+		return c.JSON(fiber.Map{
+			"code":    404,
+			"message": "user not found",
+			"error":   err,
+		})
+	}
+
+	if !utils.ComparePasswords(result.Password, []byte(json.Password)) {
+		return c.JSON(fiber.Map{
+			"code":    401,
+			"message": "Invalid Password",
+		})
+	}
+
+	utils.SendAccessToken(jwt.MapClaims{"userId": result.UserId}, c)
+
+	return c.JSON(fiber.Map{
+		"code":    200,
+		"message": "sucess",
+		"userId":  result.UserId,
+	})
 }
 
 func Register(c *fiber.Ctx) error {
-	return nil
+	type CreateUserRequest struct {
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+		Email     string `json:"email"`
+		Password  string `json:"password"`
+	}
+
+	json := new(CreateUserRequest)
+	if err := c.BodyParser(json); err != nil {
+		return c.JSON(fiber.Map{
+			"code":    400,
+			"message": "Invalid JSON",
+		})
+	}
+
+	password := utils.HashAndSalt([]byte(json.Password))
+
+	new := entities.User{
+		// UserId:    guuid.New(),
+		Email:     json.Email,
+		FirstName: json.FirstName,
+		LastName:  json.LastName,
+		Password:  password,
+	}
+
+	found := entities.User{}
+	query := entities.User{Email: json.Email}
+
+	err := database.DB.First(&found, &query).Error
+	if err != gorm.ErrRecordNotFound {
+		return c.JSON(fiber.Map{
+			"code":    400,
+			"message": "user already exists",
+		})
+	}
+	database.DB.Create(&new)
+
+	utils.SendAccessToken(jwt.MapClaims{"userId": new.UserId}, c)
+
+	return c.JSON(fiber.Map{
+		"code":    200,
+		"message": "sucess",
+		"userId":  new.UserId,
+	})
 }

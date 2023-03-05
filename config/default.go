@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"server/utils"
 )
 
 type config struct {
@@ -46,8 +45,7 @@ func SetUpConfig() {
 
 func ShowConfigDetails() {
 	if Config.SHOW_CONFIG == "true" {
-		fmt.Println(utils.JSON_Stringify(Config))
-		// fmt.Printf("%+v\n", Config)
+		fmt.Printf("%+v\n", Config)
 	} else {
 		fmt.Println("Config cannot be available!")
 	}

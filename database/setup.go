@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"server/config"
+	"server/entities"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -27,4 +28,10 @@ func Connect() {
 	}
 
 	DB = db
+
+	err = DB.AutoMigrate(&entities.User{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }
