@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 type T interface{}
@@ -28,20 +26,4 @@ func JSON_Stringify(v any) string {
 	}
 
 	return string(res)
-}
-
-func ComparePasswords(hashedPassword string, plainPassword []byte) bool {
-	byteHash := []byte(hashedPassword)
-	err := bcrypt.CompareHashAndPassword(byteHash, plainPassword)
-	return err == nil
-}
-
-func HashAndSalt(pwd []byte) string {
-	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
-
-	if err != nil {
-		return ""
-	}
-
-	return string(hash)
 }

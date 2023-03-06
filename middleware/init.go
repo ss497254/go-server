@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"server/config"
-	"server/utils"
+	"server/lib"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -13,7 +13,7 @@ func Init(c *fiber.Ctx) error {
 	cookie := c.Cookies(config.Config.COOKIE_NAME)
 
 	if cookie != "" {
-		session, err := utils.ParseJWT(cookie, config.Config.COOKIE_SECRET)
+		session, err := lib.ParseJWT(cookie, config.Config.COOKIE_SECRET)
 
 		if err == nil {
 			c.Locals("session", session)

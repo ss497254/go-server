@@ -3,7 +3,7 @@ package routes
 import (
 	"server/database"
 	"server/entities"
-	"server/utils"
+	"server/lib"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -36,14 +36,14 @@ func Login(c *fiber.Ctx) error {
 		})
 	}
 
-	if !utils.ComparePasswords(result.Password, []byte(json.Password)) {
+	if !lib.ComparePasswords(result.Password, []byte(json.Password)) {
 		return c.JSON(fiber.Map{
 			"code":    401,
 			"message": "Invalid Password",
 		})
 	}
 
-	utils.SendAccessToken(jwt.MapClaims{"userId": result.UserId}, c)
+	lib.SendAccessToken(jwt.MapClaims{"userId": result.UserId}, c)
 
 	return c.JSON(fiber.Map{
 		"code":    200,
@@ -68,7 +68,7 @@ func Register(c *fiber.Ctx) error {
 		})
 	}
 
-	password := utils.HashAndSalt([]byte(json.Password))
+	password := lib.HashAndSalt([]byte(json.Password))
 
 	new := entities.User{
 		// UserId:    guuid.New(),
@@ -90,7 +90,7 @@ func Register(c *fiber.Ctx) error {
 	}
 	database.DB.Create(&new)
 
-	utils.SendAccessToken(jwt.MapClaims{"userId": new.UserId}, c)
+	lib.SendAccessToken(jwt.MapClaims{"userId": new.UserId}, c)
 
 	return c.JSON(fiber.Map{
 		"code":    200,
