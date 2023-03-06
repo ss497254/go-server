@@ -1,11 +1,20 @@
-FROM alpine:latest
+FROM golang:1.20-alpine as builder
+LABEL stage=go-builder
+
+RUN mkdir /app
+
+COPY . /app
 
 WORKDIR /app
 
-ARG file_name="go_server"
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o go_server main.go
 
-COPY /dist/$file_name /app/go_server
+RUN chmod +x /app/go_server
 
-EXPOSE 8080
+FROM alpine:latest
 
-CMD ["./go_server"]
+RUN mkdir /app
+
+COPY --from=builder /app/go_server /app
+
+CMD ["/app/go_server"]
