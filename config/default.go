@@ -47,6 +47,6 @@ func ShowConfigDetails() {
 	if Config.SHOW_CONFIG == "true" {
 		fmt.Printf("%+v\n", Config)
 	} else {
-		fmt.Println("Config cannot be available!")
+		fmt.Println("Config is not available!")
 	}
 }

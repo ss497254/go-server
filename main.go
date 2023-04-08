@@ -13,7 +13,10 @@ import (
 )
 
 func main() {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		AppName: "Go server",
+		Prefork: true,
+	})
 
 	config.SetUpConfig()
 	database.Connect()
@@ -29,5 +32,8 @@ func main() {
 	}))
 
 	routes.Initalize(app)
-	log.Fatal(app.Listen("localhost:" + config.Config.PORT))
+
+	app.Use(middleware.NotFound)
+
+	log.Fatal(app.Listen("127.0.0.1:" + config.Config.PORT))
 }
